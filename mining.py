@@ -4,7 +4,6 @@ from openpyxl import Workbook
 from bs4 import BeautifulSoup
 from fake_useragent import UserAgent
 
-
 wb = Workbook()
 ws = wb.active
 
@@ -65,7 +64,7 @@ def toExcel(title, features, excelfile):
         rowdata = []
         properties = eachfeature.get('properties')
         status = properties.get('status')
-        if properties.get('country') == 'China' and ((status == 'shelved') or (status == 'cancelled')):
+        if ((status == 'shelved') or (status == 'cancelled')):
             wiki_page = properties.get('wiki_page')
             geometry = eachfeature.get('geometry')
             for eachtitle in title:
@@ -77,8 +76,8 @@ def toExcel(title, features, excelfile):
             # i = i + 1
             result = getCoal(wiki_page, rowdata)
             if result is None:
-                rowdata.append('-1')
-                rowdata.append('-1')
+                rowdata.append('not avaliable')
+                rowdata.append('not avaliable')
                 ws.append(rowdata)
             else:
                 ws.append(result)
@@ -96,9 +95,15 @@ if __name__ == '__main__':
     title = ["unit", "plant", "other_names", "wiki_page", "sponsor", "capacity_mw", "status", "region", "country",
              "subnational_unit", "annual_co2_mtons", "coordinates", "Coal", "Coal type"]
     features = request()
+    # features = [{"type": "Feature",
+    #              "properties": {"unit": "Huadian Tongzhou Bay unit 1", "plant": "Huadian Tongzhou Bay power station",
+    #                             "other_names": "", "wiki_page": "http://bit.ly/1MpQ3nj", "sponsor": "China Huadian",
+    #                             "capacity_mw": 1000, "status": "shelved", "region": "East Asia", "country": "China",
+    #                             "subnational_unit": "Jiangsu", "annual_co2_mtons": 0.000000},
+    #              "geometry": {"type": "Point", "coordinates": [121.429000, 32.189728]}}
+    #             ]
     toExcel(title, features, './coalmining.xlsx')
-    # c = ["00","11"]
-    # resu =getCoal("http://bit.ly/1NV0AUY",title)
+    # resu =getCoal("http://bit.ly/1MpQ3nj",title)
     # if resu is None:
     #     title.append('-2')
     #     title.append('-2')
