@@ -15,7 +15,7 @@ def request():
     return json.loads(resp.text).get('features')
 
 
-def getCoal(eachfeature):
+def getCoal(eachfeature, title):
     rowdata = []
     properties = eachfeature.get('properties')
     status = properties.get('status')
@@ -37,13 +37,16 @@ def getCoal(eachfeature):
             result = rowdata
             Coal = soup.find("b", string="Type:")
             if Coal is None:
-                    result.append("-1")
+                result.append("-1")
             else:
                 Coalli = Coal.find_parent("li")
                 if Coalli is None:
-                    sibling = Coal.next_sibling
+                    sibling = str(Coal.next_sibling)
                     if sibling:
-                        result.append(sibling)
+                        if sibling != "<br/>":
+                            result.append(sibling)
+                        else:
+                            result.append("-1")
                     else:
                         result.append("-1")
                 else:
@@ -53,16 +56,23 @@ def getCoal(eachfeature):
                         result.append(typeArr[1])
                     else:
                         result.append("-1")
+            lowercase_type = soup.find("b", string="Coal type:")
+            if lowercase_type is None:
+                Coal_type = soup.find("b", string="Coal Type:")
+            else:
+                Coal_type = lowercase_type
 
-            Coal_type = soup.find("b", string="Coal type:")
             if Coal_type is None:
-                    result.append("-1")
+                result.append("-1")
             else:
                 Coal_type_li = Coal_type.find_parent("li")
                 if Coal_type_li is None:
-                    sibling = Coal_type.next_sibling
+                    sibling = str(Coal_type.next_sibling)
                     if sibling:
-                        result.append(sibling)
+                        if sibling != "<br/>":
+                            result.append(sibling)
+                        else:
+                            result.append("-1")
                     else:
                         result.append("-1")
                 else:
@@ -96,7 +106,7 @@ def toExcel(title, features, excelfile):
     ws.append(title)
     pool = multiprocessing.Pool(multiprocessing.cpu_count())
     for eachfeature in features:
-        result = pool.apply_async(getCoal, (eachfeature,), callback=tempStore)
+        result = pool.apply_async(getCoal, (eachfeature, title), callback=tempStore)
     pool.close()
     pool.join()
     # if i == 20:
@@ -117,7 +127,7 @@ def tempStore(result):
 if __name__ == '__main__':
     title = ["unit", "plant", "other_names", "wiki_page", "sponsor", "capacity_mw", "status", "region", "country",
              "subnational_unit", "annual_co2_mtons", "coordinates", "Coal", "Coal type"]
-    # features = request()
+    features = request()
     # features = [{"type": "Feature", "properties": {"unit": "East Hope Metals Wucaiwan power station Unit 3",
     #                                                "plant": "East Hope Metals Wucaiwan power station",
     #                                                "other_names": "", "wiki_page": "http://bit.ly/1toaGrN",
@@ -798,16 +808,16 @@ if __name__ == '__main__':
     #                                                "subnational_unit": "Xinjiang", "annual_co2_mtons": 0.000000},
     #              "geometry": {"type": "Point", "coordinates": [85.603456, 44.309987]}}
     #     , ]
-    # toExcel(title, features, './multicoalmining.xlsx')
+    toExcel(title, features, './multicoalmining.xlsx')
     # c = ["00","11"]
-    feature = {"type": "Feature", "properties": {"unit": "Huadian Shawan Cogen power station Unit 2",
-                                                   "plant": "Huadian Shawan Cogen power station", "other_names": "",
-                                                   "wiki_page": "http://bit.ly/1uz5TGf",
-                                                   "sponsor": "Huadian Xinjiang Power Co Ltd", "capacity_mw": 350,
-                                                   "status": "shelved", "region": "East Asia", "country": "China",
-                                                   "subnational_unit": "Xinjiang", "annual_co2_mtons": 0.000000},
-                 "geometry": {"type": "Point", "coordinates": [85.603456, 44.309987]}}
-    resu =getCoal(feature)
+    # feature = {"type": "Feature", "properties": {"unit": "Huadian Shawan Cogen power station Unit 2",
+    #                                              "plant": "Huadian Shawan Cogen power station", "other_names": "",
+    #                                              "wiki_page": "https://www.sourcewatch.org/index.php/Larsen_&_Tubro_power_station",
+    #                                              "sponsor": "Huadian Xinjiang Power Co Ltd", "capacity_mw": 350,
+    #                                              "status": "shelved", "region": "East Asia", "country": "China",
+    #                                              "subnational_unit": "Xinjiang", "annual_co2_mtons": 0.000000},
+    #            "geometry": {"type": "Point", "coordinates": [85.603456, 44.309987]}}
+    # resu = getCoal(feature, title)
     # if resu is None:
     #     title.append('-2')
     #     title.append('-2')
